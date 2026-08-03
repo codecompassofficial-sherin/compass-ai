@@ -18,6 +18,8 @@ export interface GoalInstanceDocument {
   estimatedEffortHours: number;
   bindings: GoalBindings;
   status: GoalInstanceStatus;
+  activatedAt?: Date;
+  completedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -45,6 +47,8 @@ const goalInstanceSchema = new Schema<GoalInstanceDocument>(
     estimatedEffortHours: { type: Number, required: true },
     bindings: { type: goalBindingsSchema, required: true },
     status: { type: String, enum: [...GOAL_INSTANCE_STATUSES], required: true, default: "draft" },
+    activatedAt: { type: Date },
+    completedAt: { type: Date },
   },
   { timestamps: true, collection: "goalinstances" },
 );
