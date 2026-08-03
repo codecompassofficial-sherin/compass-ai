@@ -19,7 +19,6 @@ export const appNavigation: NavSection[] = [
         title: 'Assessments',
         href: '/assessments',
         icon: ClipboardList,
-        disabled: true,
       },
       { title: 'Roadmaps', href: '/roadmaps', icon: Map, disabled: true },
       { title: 'Goals', href: '/goals', icon: Target, disabled: true },
