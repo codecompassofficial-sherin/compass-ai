@@ -6,6 +6,7 @@ export interface ApiErrorBody {
 
 export interface ApiSuccessResponse<T> {
   success: true;
+  message?: string;
   data: T;
 }
 
@@ -16,8 +17,12 @@ export interface ApiErrorResponse {
 
 export type ApiResponse<T> = ApiSuccessResponse<T> | ApiErrorResponse;
 
-export function success<T>(data: T): ApiSuccessResponse<T> {
-  return { success: true, data };
+export function success<T>(data: T, message?: string): ApiSuccessResponse<T> {
+  return {
+    success: true,
+    ...(message !== undefined ? { message } : {}),
+    data,
+  };
 }
 
 export function errorBody(

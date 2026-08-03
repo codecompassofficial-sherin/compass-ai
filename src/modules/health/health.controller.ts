@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
-import { AppError } from "../../shared/core/AppError.js";
-import { success } from "../../shared/core/ApiResponse.js";
+import { AppError } from "../../shared/common/AppError.js";
+import { success } from "../../shared/common/ApiResponse.js";
 import { getMongoState } from "../../shared/database/mongo.js";
 
 export const healthController = {
