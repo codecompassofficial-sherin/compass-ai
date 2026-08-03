@@ -6,10 +6,10 @@ import type {
 
 export type PhaseStatus = 'completed' | 'current' | 'upcoming'
 
-export function groupGoalsByPhase(
+export function groupGoalsByPhase<T extends { phaseKey: string; order: number }>(
   phases: RoadmapPhase[],
-  goals: PublicGoalInstance[]
-): Map<string, PublicGoalInstance[]> {
+  goals: T[]
+): Map<string, T[]> {
   const phaseOrder = new Map(phases.map((phase, index) => [phase.key, index]))
   const sorted = [...goals].sort(
     (a, b) =>
@@ -18,7 +18,7 @@ export function groupGoalsByPhase(
       a.order - b.order
   )
 
-  const grouped = new Map<string, PublicGoalInstance[]>()
+  const grouped = new Map<string, T[]>()
   for (const goal of sorted) {
     const current = grouped.get(goal.phaseKey) ?? []
     current.push(goal)
