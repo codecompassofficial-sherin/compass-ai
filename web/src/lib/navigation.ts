@@ -33,7 +33,6 @@ export const appNavigation: NavSection[] = [
         title: 'Career Intelligence',
         href: '/intelligence',
         icon: Sparkles,
-        disabled: true,
       },
     ],
   },
