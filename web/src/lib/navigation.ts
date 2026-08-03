@@ -3,6 +3,7 @@ import {
   ClipboardList,
   Map,
   Target,
+  FolderGit2,
   Sparkles,
 } from 'lucide-react'
 import type { NavSection } from '@/lib/types'
@@ -22,6 +23,7 @@ export const appNavigation: NavSection[] = [
       },
       { title: 'Roadmaps', href: '/roadmaps', icon: Map },
       { title: 'Goals', href: '/goals', icon: Target },
+      { title: 'Projects', href: '/projects', icon: FolderGit2 },
     ],
   },
   {
