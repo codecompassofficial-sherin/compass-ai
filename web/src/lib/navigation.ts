@@ -20,7 +20,7 @@ export const appNavigation: NavSection[] = [
         href: '/assessments',
         icon: ClipboardList,
       },
-      { title: 'Roadmaps', href: '/roadmaps', icon: Map, disabled: true },
+      { title: 'Roadmaps', href: '/roadmaps', icon: Map },
       { title: 'Goals', href: '/goals', icon: Target, disabled: true },
     ],
   },
