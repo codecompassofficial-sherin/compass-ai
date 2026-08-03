@@ -11,9 +11,3 @@ export interface NavSection {
   title: string
   items: NavItem[]
 }
-
-export interface User {
-  name: string | null
-  email: string | null
-  initials: string
-}

@@ -1,0 +1,60 @@
+'use client'
+
+import { useCallback } from 'react'
+import { useRouter } from 'next/navigation'
+
+import { authApi } from '@/features/auth/auth.api'
+import { useAuthStore } from '@/features/auth/auth.store'
+import type { LoginInput, RegisterInput } from '@/features/auth/auth.types'
+
+let restorePromise: Promise<void> | null = null
+
+async function restoreOnce(): Promise<void> {
+  try {
+    const { accessToken } = await authApi.refresh()
+    const { user } = await authApi.getMe()
+    useAuthStore.getState().setSession(user, accessToken)
+  } catch {
+    useAuthStore.getState().clearSession()
+  }
+}
+
+export function restoreSession(): Promise<void> {
+  if (!restorePromise) {
+    restorePromise = restoreOnce()
+  }
+  return restorePromise
+}
+
+export function useAuth() {
+  const router = useRouter()
+  const status = useAuthStore((state) => state.status)
+  const user = useAuthStore((state) => state.user)
+  const isAuthenticated = status === 'authenticated'
+  const isLoading = status === 'loading'
+
+  const login = useCallback(async (input: LoginInput) => {
+    const result = await authApi.login(input)
+    useAuthStore.getState().setSession(result.user, result.accessToken)
+    return result
+  }, [])
+
+  const register = useCallback(async (input: RegisterInput) => {
+    const result = await authApi.register(input)
+    useAuthStore.getState().setSession(result.user, result.accessToken)
+    return result
+  }, [])
+
+  const logout = useCallback(async () => {
+    try {
+      await authApi.logout()
+    } catch {
+      // Local session is cleared regardless of the server response.
+    }
+    useAuthStore.getState().clearSession()
+    router.replace('/login')
+    router.refresh()
+  }, [router])
+
+  return { status, user, isAuthenticated, isLoading, login, register, logout }
+}

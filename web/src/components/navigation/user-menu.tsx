@@ -1,7 +1,8 @@
 'use client'
 
-import { LogOut, Settings } from 'lucide-react'
+import { LogOut, Settings, User as UserIcon } from 'lucide-react'
 
+import { useAuth } from '@/features/auth/hooks/useAuth'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
@@ -13,7 +14,16 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 
+function getInitials(firstName: string, lastName: string): string {
+  return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase()
+}
+
 export function UserMenu() {
+  const { user, logout } = useAuth()
+
+  const name = user ? `${user.firstName} ${user.lastName}` : 'Account'
+  const email = user?.email ?? 'Signed in as guest'
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -27,15 +37,21 @@ export function UserMenu() {
         }
       >
         <Avatar size="sm">
-          <AvatarFallback>U</AvatarFallback>
+          <AvatarFallback>
+            {user ? (
+              getInitials(user.firstName, user.lastName)
+            ) : (
+              <UserIcon className="size-3.5" />
+            )}
+          </AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" sideOffset={6} className="w-56">
         <DropdownMenuLabel>
           <span className="flex flex-col gap-0.5">
-            <span className="text-foreground font-medium">Account</span>
-            <span className="text-muted-foreground font-normal">
-              Signed in as guest
+            <span className="text-foreground truncate font-medium">{name}</span>
+            <span className="text-muted-foreground truncate font-normal">
+              {email}
             </span>
           </span>
         </DropdownMenuLabel>
@@ -44,7 +60,7 @@ export function UserMenu() {
           <Settings />
           Account settings
         </DropdownMenuItem>
-        <DropdownMenuItem variant="destructive" disabled>
+        <DropdownMenuItem variant="destructive" onClick={() => void logout()}>
           <LogOut />
           Sign out
         </DropdownMenuItem>
