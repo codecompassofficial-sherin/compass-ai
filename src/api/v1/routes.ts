@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { assessmentRoutes } from "../../modules/assessment/assessment.routes.js";
 import { authRoutes } from "../../modules/auth/auth.routes.js";
+import { dashboardRoutes } from "../../modules/dashboard/dashboard.routes.js";
 import { goalsRoutes } from "../../modules/goals/goals.routes.js";
 import { healthRoutes } from "../../modules/health/health.routes.js";
 import { profileRoutes } from "../../modules/profile/profile.routes.js";
@@ -16,5 +17,6 @@ router.use("/assessment", assessmentRoutes);
 router.use("/roadmap", roadmapRoutes);
 router.use("/goals", goalsRoutes);
 router.use("/projects", projectsRoutes);
+router.use("/dashboard", dashboardRoutes);
 
 export const v1Routes = router;
