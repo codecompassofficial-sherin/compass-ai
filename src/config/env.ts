@@ -9,6 +9,17 @@ const rawEnvSchema = z.object({
   LOG_LEVEL: z
     .enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"])
     .default("info"),
+  JWT_ACCESS_SECRET: z.string().min(32, "JWT_ACCESS_SECRET must be at least 32 characters"),
+  REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().positive().max(365).default(30),
+  CORS_ORIGINS: z.string().default("http://localhost:3000"),
+  FRONTEND_URL: z
+    .url("FRONTEND_URL must be a valid URL")
+    .default("http://localhost:3000"),
+  SMTP_HOST: z.string().min(1).optional(),
+  SMTP_PORT: z.coerce.number().int().positive().max(65535).optional(),
+  SMTP_USER: z.string().min(1).optional(),
+  SMTP_PASS: z.string().optional(),
+  SMTP_FROM: z.string().min(1).optional(),
 });
 
 const envSchema = rawEnvSchema.transform((raw) => ({
@@ -17,6 +28,17 @@ const envSchema = rawEnvSchema.transform((raw) => ({
   port: raw.PORT,
   mongodbUri: raw.MONGODB_URI,
   logLevel: raw.LOG_LEVEL,
+  jwtAccessSecret: raw.JWT_ACCESS_SECRET,
+  refreshTokenTtlDays: raw.REFRESH_TOKEN_TTL_DAYS,
+  corsOrigins: raw.CORS_ORIGINS.split(",")
+    .map((origin) => origin.trim())
+    .filter((origin) => origin.length > 0),
+  frontendUrl: raw.FRONTEND_URL,
+  smtpHost: raw.SMTP_HOST,
+  smtpPort: raw.SMTP_PORT ?? (raw.SMTP_HOST ? 587 : undefined),
+  smtpUser: raw.SMTP_USER,
+  smtpPass: raw.SMTP_PASS,
+  smtpFrom: raw.SMTP_FROM,
 }));
 
 const result = envSchema.safeParse(process.env);
