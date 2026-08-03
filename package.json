@@ -13,7 +13,7 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.test.json",
-    "test": "node --import tsx --test test/auth.integration.test.ts",
+    "test": "node --import tsx --test test/auth.integration.test.ts test/profile.integration.test.ts",
     "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\""
   },
   "license": "UNLICENSED",
