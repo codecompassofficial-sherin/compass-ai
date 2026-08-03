@@ -1,4 +1,4 @@
-export type Role = "USER" | "ADMIN";
+import type { PublicUser, Role } from "../users/user.types.js";
 
 export interface AuthUser {
   id: string;
@@ -13,17 +13,6 @@ export interface SessionContext {
   device: string;
   ip: string;
   userAgent: string;
-}
-
-export interface PublicUser {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  role: Role;
-  isEmailVerified: boolean;
-  avatarUrl?: string;
-  createdAt: string;
 }
 
 export interface AuthTokens {

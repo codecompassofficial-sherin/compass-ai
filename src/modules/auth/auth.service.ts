@@ -16,12 +16,12 @@ import {
 } from "./auth.constants.js";
 import { authErrors } from "./auth.errors.js";
 import { authRepository } from "./auth.repository.js";
-import type { UserDocument } from "./auth.model.js";
+import { toPublicUser } from "../users/user.mapper.js";
+import type { UserDocument } from "../users/user.model.js";
+import type { PublicUser, Role } from "../users/user.types.js";
 import type {
   AuthSessionResult,
   AuthTokens,
-  PublicUser,
-  Role,
   SessionContext,
 } from "./auth.types.js";
 import type { ForgotPasswordInput, LoginInput, RegisterInput } from "./auth.validation.js";
@@ -68,19 +68,6 @@ function verifyAccessToken(token: string): { sub: string; role: Role } {
     throw authErrors.invalidAccessToken();
   }
   return { sub: payload.sub, role: payload.role as Role };
-}
-
-function toPublicUser(user: UserDocument): PublicUser {
-  return {
-    id: user._id.toString(),
-    firstName: user.firstName,
-    lastName: user.lastName,
-    email: user.email,
-    role: user.role,
-    isEmailVerified: user.isEmailVerified,
-    ...(user.avatarUrl ? { avatarUrl: user.avatarUrl } : {}),
-    createdAt: user.createdAt.toISOString(),
-  };
 }
 
 function escapeHtml(value: string): string {

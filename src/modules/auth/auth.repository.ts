@@ -1,14 +1,14 @@
 import { Types } from "mongoose";
+import { UserModel } from "../users/user.model.js";
+import type { UserDocument } from "../users/user.model.js";
 import {
   EmailVerificationTokenModel,
   PasswordResetTokenModel,
-  UserModel,
   UserSessionModel,
 } from "./auth.model.js";
 import type {
   EmailVerificationTokenDocument,
   PasswordResetTokenDocument,
-  UserDocument,
   UserSessionDocument,
 } from "./auth.model.js";
 import { authErrors } from "./auth.errors.js";

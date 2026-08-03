@@ -2,7 +2,7 @@ import type { NextFunction, Request, Response } from "express";
 import { authErrors } from "./auth.errors.js";
 import { authRepository } from "./auth.repository.js";
 import { authService } from "./auth.service.js";
-import type { Role } from "./auth.types.js";
+import type { Role } from "../users/user.types.js";
 
 export async function authenticate(
   req: Request,
