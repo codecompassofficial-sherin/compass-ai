@@ -15,5 +15,8 @@ export default defineConfig({
     setupFiles: ['./vitest.setup.ts'],
     include: ['src/**/*.{test,spec}.{ts,tsx}'],
     css: false,
+    env: {
+      NEXT_PUBLIC_API_BASE_URL: 'http://localhost:4000/api/v1',
+    },
   },
 })

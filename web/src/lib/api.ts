@@ -1,4 +1,13 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? '/api/v1'
+const configuredBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL
+
+if (!configuredBaseUrl && process.env.NODE_ENV === 'development') {
+  throw new Error(
+    'Missing required environment variable NEXT_PUBLIC_API_BASE_URL. ' +
+      'Create web/.env.local with NEXT_PUBLIC_API_BASE_URL set to the backend API base URL (see web/.env.example).'
+  )
+}
+
+const API_BASE_URL = configuredBaseUrl
 
 let accessToken: string | null = null
 
@@ -42,6 +51,14 @@ export async function apiRequest<T>(
   path: string,
   options: RequestOptions = {}
 ): Promise<T> {
+  if (!API_BASE_URL) {
+    throw new ApiError(
+      0,
+      'NEXT_PUBLIC_API_BASE_URL is not configured',
+      null
+    )
+  }
+
   const url = path.startsWith('http')
     ? path
     : `${API_BASE_URL}${path.startsWith('/') ? path : `/${path}`}`
