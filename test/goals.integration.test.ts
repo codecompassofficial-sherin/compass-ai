@@ -288,3 +288,145 @@ describe("GET /api/v1/goals/:id", () => {
     assert.equal(res.body.error.code, "NO_ACTIVE_ROADMAP");
   });
 });
+
+describe("PATCH /api/v1/goals/:goalId/tasks/:taskId", () => {
+  async function withActivatedGoal() {
+    const { accessToken, roadmap } = await withRoadmap();
+    const goalId = roadmap.goals[0].id;
+    const activated = await request(app)
+      .post(`${API}/${goalId}/activate`)
+      .set("Authorization", authHeader(accessToken));
+    assert.equal(activated.status, 200);
+    const taskId = activated.body.data.goal.tasks[0].id;
+    return { accessToken, goalId, taskId };
+  }
+
+  it("rejects unauthenticated requests with 401", async () => {
+    const res = await request(app)
+      .patch(`${API}/goal-1/tasks/task-1`)
+      .send({ status: "in_progress" });
+
+    assert.equal(res.status, 401);
+    assert.equal(res.body.error.code, "INVALID_ACCESS_TOKEN");
+  });
+
+  it("rejects an invalid goal id with 400", async () => {
+    const { accessToken, taskId } = await withActivatedGoal();
+
+    const res = await request(app)
+      .patch(`${API}/not-an-object-id/tasks/${taskId}`)
+      .set("Authorization", authHeader(accessToken))
+      .send({ status: "in_progress" });
+
+    assert.equal(res.status, 400);
+    assert.equal(res.body.error.code, "INVALID_GOAL_ID");
+  });
+
+  it("rejects an invalid task id with 400", async () => {
+    const { accessToken, goalId } = await withActivatedGoal();
+
+    const res = await request(app)
+      .patch(`${API}/${goalId}/tasks/not-an-object-id`)
+      .set("Authorization", authHeader(accessToken))
+      .send({ status: "in_progress" });
+
+    assert.equal(res.status, 400);
+    assert.equal(res.body.error.code, "INVALID_TASK_ID");
+  });
+
+  it("returns 404 for a task that does not exist", async () => {
+    const { accessToken, goalId } = await withActivatedGoal();
+
+    const res = await request(app)
+      .patch(`${API}/${goalId}/tasks/000000000000000000000000`)
+      .set("Authorization", authHeader(accessToken))
+      .send({ status: "in_progress" });
+
+    assert.equal(res.status, 404);
+    assert.equal(res.body.error.code, "TASK_NOT_FOUND");
+  });
+
+  it("rejects an invalid status value with 400", async () => {
+    const { accessToken, goalId, taskId } = await withActivatedGoal();
+
+    const res = await request(app)
+      .patch(`${API}/${goalId}/tasks/${taskId}`)
+      .set("Authorization", authHeader(accessToken))
+      .send({ status: "shipped" });
+
+    assert.equal(res.status, 400);
+    assert.equal(res.body.error.code, "VALIDATION_ERROR");
+  });
+
+  it("moves a task from todo to in_progress", async () => {
+    const { accessToken, goalId, taskId } = await withActivatedGoal();
+
+    const res = await request(app)
+      .patch(`${API}/${goalId}/tasks/${taskId}`)
+      .set("Authorization", authHeader(accessToken))
+      .send({ status: "in_progress" });
+
+    assert.equal(res.status, 200);
+    const goal = res.body.data.goal;
+    const task = goal.tasks.find((task: { id: string }) => task.id === taskId);
+    assert.equal(task.status, "in_progress");
+    assert.equal(goal.progress, 0);
+  });
+
+  it("moves a task from in_progress to done and increases goal progress", async () => {
+    const { accessToken, goalId, taskId } = await withActivatedGoal();
+
+    await request(app)
+      .patch(`${API}/${goalId}/tasks/${taskId}`)
+      .set("Authorization", authHeader(accessToken))
+      .send({ status: "in_progress" });
+
+    const res = await request(app)
+      .patch(`${API}/${goalId}/tasks/${taskId}`)
+      .set("Authorization", authHeader(accessToken))
+      .send({ status: "done" });
+
+    assert.equal(res.status, 200);
+    const goal = res.body.data.goal;
+    const task = goal.tasks.find((task: { id: string }) => task.id === taskId);
+    assert.equal(task.status, "done");
+    const doneCount = goal.tasks.filter(
+      (task: { status: string }) => task.status === "done",
+    ).length;
+    assert.equal(goal.progress, Math.round((doneCount / goal.tasks.length) * 100));
+    assert.ok(goal.progress > 0, "goal progress should increase when a task is done");
+  });
+
+  it("rejects skipping a state from todo to done", async () => {
+    const { accessToken, goalId, taskId } = await withActivatedGoal();
+
+    const res = await request(app)
+      .patch(`${API}/${goalId}/tasks/${taskId}`)
+      .set("Authorization", authHeader(accessToken))
+      .send({ status: "done" });
+
+    assert.equal(res.status, 409);
+    assert.equal(res.body.error.code, "INVALID_TASK_STATUS_TRANSITION");
+  });
+
+  it("rejects moving a done task backwards", async () => {
+    const { accessToken, goalId, taskId } = await withActivatedGoal();
+
+    await request(app)
+      .patch(`${API}/${goalId}/tasks/${taskId}`)
+      .set("Authorization", authHeader(accessToken))
+      .send({ status: "in_progress" });
+    await request(app)
+      .patch(`${API}/${goalId}/tasks/${taskId}`)
+      .set("Authorization", authHeader(accessToken))
+      .send({ status: "done" });
+
+    const res = await request(app)
+      .patch(`${API}/${goalId}/tasks/${taskId}`)
+      .set("Authorization", authHeader(accessToken))
+      .send({ status: "todo" });
+
+    assert.equal(res.status, 409);
+    assert.equal(res.body.error.code, "INVALID_TASK_STATUS_TRANSITION");
+  });
+});

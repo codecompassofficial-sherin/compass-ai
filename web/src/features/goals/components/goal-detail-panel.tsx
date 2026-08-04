@@ -23,9 +23,11 @@ import { Progress } from '@/components/ui/progress'
 import { Spinner } from '@/components/feedback/loading'
 import { GOAL_STATUS_META } from '@/features/roadmap/constants/roadmap.constants'
 import { formatDateTime, formatEffort } from '@/features/roadmap/utils/roadmap.utils'
+import { toast } from 'sonner'
 
-import { useGoal } from '../hooks/useGoals'
-import type { PublicGoal } from '../types/goals.types'
+import { getGoalErrorDetails } from '../api/goals.api'
+import { useGoal, useUpdateTaskStatus } from '../hooks/useGoals'
+import type { PublicGoal, TaskStatus } from '../types/goals.types'
 import { getTaskSummary } from '../utils/goals.utils'
 import { TaskList } from './task-list'
 
@@ -45,9 +47,29 @@ export function GoalDetailPanel({
   activating,
 }: GoalDetailPanelProps) {
   const detail = useGoal(goal.id)
+  const updateTask = useUpdateTaskStatus()
   const display = detail.data?.goal ?? goal
   const statusMeta = GOAL_STATUS_META[display.status]
   const tasks = getTaskSummary(display.tasks)
+  const [pendingTaskIds, setPendingTaskIds] = useState<Set<string>>(
+    () => new Set<string>()
+  )
+
+  async function handleUpdateTaskStatus(taskId: string, status: TaskStatus) {
+    setPendingTaskIds((current) => new Set(current).add(taskId))
+    try {
+      await updateTask.mutateAsync({ goalId: display.id, taskId, status })
+      toast.success(status === 'done' ? 'Task completed' : 'Task started')
+    } catch (err) {
+      toast.error(getGoalErrorDetails(err))
+    } finally {
+      setPendingTaskIds((current) => {
+        const next = new Set(current)
+        next.delete(taskId)
+        return next
+      })
+    }
+  }
 
   return (
     <Card className="h-fit">
@@ -142,7 +164,11 @@ export function GoalDetailPanel({
             Tasks
           </p>
           {display.tasks.length > 0 ? (
-            <TaskList tasks={display.tasks} />
+            <TaskList
+              tasks={display.tasks}
+              onUpdateStatus={handleUpdateTaskStatus}
+              pendingTaskIds={pendingTaskIds}
+            />
           ) : (
             <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed px-4 py-8 text-center">
               <ListChecks className="text-muted-foreground size-5" />

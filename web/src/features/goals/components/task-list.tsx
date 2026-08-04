@@ -1,16 +1,19 @@
 'use client'
 
-import { CheckCircle2, Circle, CircleDot, Clock3 } from 'lucide-react'
+import { Check, CheckCircle2, Circle, CircleDot, Clock3, Play } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { formatEffort } from '@/features/roadmap/utils/roadmap.utils'
 
 import { TASK_STATUS_META } from '../constants/goals.constants'
-import type { PublicTask } from '../types/goals.types'
+import type { PublicTask, TaskStatus } from '../types/goals.types'
 
 interface TaskListProps {
   tasks: PublicTask[]
+  onUpdateStatus: (taskId: string, status: TaskStatus) => void
+  pendingTaskIds?: Set<string>
 }
 
 function TaskStatusIcon({ status }: { status: PublicTask['status'] }) {
@@ -23,12 +26,17 @@ function TaskStatusIcon({ status }: { status: PublicTask['status'] }) {
   return <Circle className="text-muted-foreground size-4 shrink-0" />
 }
 
-export function TaskList({ tasks }: TaskListProps) {
+export function TaskList({
+  tasks,
+  onUpdateStatus,
+  pendingTaskIds = new Set<string>(),
+}: TaskListProps) {
   return (
     <ul className="flex flex-col gap-2">
       {tasks.map((task) => {
         const meta = TASK_STATUS_META[task.status]
         const isDone = task.status === 'done'
+        const isUpdating = pendingTaskIds.has(task.id)
 
         return (
           <li
@@ -70,12 +78,36 @@ export function TaskList({ tasks }: TaskListProps) {
               </p>
             </div>
 
-            <Badge
-              variant={meta.variant}
-              className="mt-0.5 shrink-0 self-start"
-            >
-              {meta.label}
-            </Badge>
+            <div className="flex shrink-0 flex-col items-end gap-1.5">
+              <Badge
+                variant={meta.variant}
+                className="mt-0.5 shrink-0 self-start"
+              >
+                {meta.label}
+              </Badge>
+              {task.status === 'todo' && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={isUpdating}
+                  onClick={() => onUpdateStatus(task.id, 'in_progress')}
+                >
+                  <Play />
+                  Start
+                </Button>
+              )}
+              {task.status === 'in_progress' && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={isUpdating}
+                  onClick={() => onUpdateStatus(task.id, 'done')}
+                >
+                  <Check />
+                  Mark done
+                </Button>
+              )}
+            </div>
           </li>
         )
       })}

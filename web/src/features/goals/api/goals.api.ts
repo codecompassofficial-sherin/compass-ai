@@ -1,6 +1,6 @@
 import { ApiError, apiRequest, isRecord } from '@/lib/api'
 
-import type { PublicGoal } from '../types/goals.types'
+import type { PublicGoal, TaskStatus } from '../types/goals.types'
 
 export const goalsApi = {
   list: () => apiRequest<{ goals: PublicGoal[] }>('/goals'),
@@ -13,6 +13,11 @@ export const goalsApi = {
   complete: (id: string) =>
     apiRequest<{ goal: PublicGoal }>(`/goals/${id}/complete`, {
       method: 'POST',
+    }),
+  updateTask: (goalId: string, taskId: string, status: TaskStatus) =>
+    apiRequest<{ goal: PublicGoal }>(`/goals/${goalId}/tasks/${taskId}`, {
+      method: 'PATCH',
+      body: { status },
     }),
 }
 
@@ -46,6 +51,12 @@ export function getGoalErrorDetails(error: unknown): string {
         return 'This goal is already completed.'
       case 'GOAL_NOT_ACTIVE':
         return 'Only active goals can be completed.'
+      case 'TASK_NOT_FOUND':
+        return 'This task could not be found. It may have been removed.'
+      case 'INVALID_TASK_ID':
+        return 'This task is not valid. Please try again.'
+      case 'INVALID_TASK_STATUS_TRANSITION':
+        return 'This task change is not allowed.'
       default:
         return serverMessage ?? 'Something went wrong. Please try again.'
     }

@@ -4,6 +4,7 @@ export {
   useGoal,
   useActivateGoal,
   useCompleteGoal,
+  useUpdateTaskStatus,
   useGoalsInvalidation,
   GOALS_QUERY_KEY,
   GOAL_DETAIL_QUERY_KEY,

@@ -5,7 +5,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useApiQuery } from '@/lib/use-api-query'
 
 import { goalsApi } from '../api/goals.api'
-import type { PublicGoal } from '../types/goals.types'
+import type { PublicGoal, TaskStatus } from '../types/goals.types'
 
 export const GOALS_QUERY_KEY = ['goals']
 export const GOAL_DETAIL_QUERY_KEY = (id: string) => ['goals', id]
@@ -44,6 +44,22 @@ export function useCompleteGoal() {
   const invalidateGoalsData = useGoalsInvalidation()
   return useMutation({
     mutationFn: goalsApi.complete,
+    onSuccess: invalidateGoalsData,
+  })
+}
+
+export function useUpdateTaskStatus() {
+  const invalidateGoalsData = useGoalsInvalidation()
+  return useMutation({
+    mutationFn: ({
+      goalId,
+      taskId,
+      status,
+    }: {
+      goalId: string
+      taskId: string
+      status: TaskStatus
+    }) => goalsApi.updateTask(goalId, taskId, status),
     onSuccess: invalidateGoalsData,
   })
 }

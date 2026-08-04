@@ -2,9 +2,11 @@ import { Types } from "mongoose";
 import type { GoalInstanceDocument } from "../roadmap/goalInstance.model.js";
 import { roadmapErrors } from "../roadmap/roadmap.errors.js";
 import type { RoadmapDocument } from "../roadmap/roadmap.model.js";
+import { TASK_STATUS_TRANSITIONS } from "./goals.constants.js";
 import { goalsErrors } from "./goals.errors.js";
 import { goalsRepository } from "./goals.repository.js";
-import type { PublicGoal, PublicTask } from "./goals.types.js";
+import type { PublicGoal, PublicTask, TaskStatus } from "./goals.types.js";
+import type { UpdateTaskStatusInput } from "./goals.validation.js";
 import { generateTasks } from "./task.generator.js";
 import type { TaskInstanceDocument } from "./taskInstance.model.js";
 
@@ -145,9 +147,53 @@ async function completeGoal(userId: string, goalId: Types.ObjectId): Promise<Pub
   return toPublicGoal(updated, tasks);
 }
 
+export function validateTaskStatusTransition(
+  current: TaskStatus,
+  next: TaskStatus,
+): void {
+  if (!TASK_STATUS_TRANSITIONS[current].includes(next)) {
+    throw goalsErrors.invalidTaskStatusTransition();
+  }
+}
+
+async function updateTaskStatus(
+  userId: string,
+  goalId: Types.ObjectId,
+  taskId: Types.ObjectId,
+  input: UpdateTaskStatusInput,
+): Promise<PublicGoal> {
+  const roadmap = await requireActiveRoadmap(userId);
+  const goal = await goalsRepository.findGoalForUser(goalId, userId);
+  if (!goal || goal.roadmapId.toString() !== roadmap._id.toString()) {
+    throw goalsErrors.goalNotFound();
+  }
+
+  const task = await goalsRepository.findTaskForUser(taskId, goalId, userId);
+  if (!task) {
+    throw goalsErrors.taskNotFound();
+  }
+
+  validateTaskStatusTransition(task.status, input.status);
+
+  const updated = await goalsRepository.updateTaskStatus({
+    taskId,
+    goalId,
+    userId,
+    status: input.status,
+  });
+  if (!updated) {
+    throw goalsErrors.taskNotFound();
+  }
+
+  const tasks = await goalsRepository.findTasksByGoalId(goal._id);
+  return toPublicGoal(goal, tasks);
+}
+
 export const goalsService = {
   listGoals,
   getGoal,
   activateGoal,
   completeGoal,
+  updateTaskStatus,
+  validateTaskStatusTransition,
 };

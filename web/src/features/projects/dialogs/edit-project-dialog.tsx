@@ -16,70 +16,38 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Form } from '@/components/ui/form'
+import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Spinner } from '@/components/feedback/loading'
 
 import { getProjectErrorDetails } from '../api/projects.api'
 import { PROJECT_STATUS_META } from '../constants/projects.constants'
 import {
   ProjectDescriptionField,
-  ProjectStatusField,
   ProjectTechStackField,
   ProjectTitleField,
   ProjectUrlField,
 } from '../forms/project-form-fields'
 import { useUpdateProject } from '../hooks/useProjects'
-import type { ProjectStatus, PublicProject } from '../types/projects.types'
-import { getAllowedStatusTransitions, isSameStringArray } from '../utils/projects.utils'
+import type { PublicProject } from '../types/projects.types'
+import { getAllowedStatusTransitions } from '../utils/projects.utils'
+import { buildUpdatePayload } from '../utils/edit-project-payload'
 import {
   editProjectSchema,
   type EditProjectFormInput,
   type EditProjectFormOutput,
-  type UpdateProjectPayload,
 } from '../validation/projects.validation'
 
 interface EditProjectDialogProps {
   project: PublicProject | null
   open: boolean
   onOpenChange: (open: boolean) => void
-}
-
-function buildUpdatePayload(
-  values: EditProjectFormOutput,
-  project: PublicProject,
-  nextStatus: string
-): UpdateProjectPayload {
-  const input: UpdateProjectPayload = {}
-
-  const title = values.title?.trim()
-  if (title !== undefined && title !== project.title) {
-    input.title = title
-  }
-
-  const description = values.description
-  if (description !== undefined && description !== project.description) {
-    input.description = description
-  }
-
-  const technologyStack = values.technologyStack ?? []
-  if (!isSameStringArray(technologyStack, project.technologyStack)) {
-    input.technologyStack = technologyStack
-  }
-
-  const githubUrl = values.githubUrl
-  if (githubUrl !== undefined && githubUrl !== (project.githubUrl ?? '')) {
-    input.githubUrl = githubUrl
-  }
-
-  const liveUrl = values.liveUrl
-  if (liveUrl !== undefined && liveUrl !== (project.liveUrl ?? '')) {
-    input.liveUrl = liveUrl
-  }
-
-  if (nextStatus !== '') {
-    input.status = nextStatus as ProjectStatus
-  }
-
-  return input
 }
 
 export function EditProjectDialog({
@@ -241,13 +209,27 @@ export function EditProjectDialog({
                 />
 
                 {statusOptions.length > 0 ? (
-                  <ProjectStatusField
-                    name="status"
-                    label="Status"
-                    description="Move this project to its next stage."
-                    options={statusOptions}
-                    placeholder="No change"
-                  />
+                  <div className="flex flex-col gap-2">
+                    <Label>Status</Label>
+                    <Select
+                      value={nextStatus || null}
+                      onValueChange={(value) => setNextStatus(value ?? '')}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="No change" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {statusOptions.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-muted-foreground text-xs">
+                      Move this project to its next stage.
+                    </p>
+                  </div>
                 ) : (
                   <p className="text-muted-foreground rounded-lg bg-muted/50 px-3 py-2 text-sm">
                     This project is completed. Archive it from the project

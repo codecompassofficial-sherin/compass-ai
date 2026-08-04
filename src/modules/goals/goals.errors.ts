@@ -25,4 +25,16 @@ export const goalsErrors = {
     AppError.conflict("Goal is already completed", {
       code: "GOAL_ALREADY_COMPLETED",
     }),
+  taskNotFound: () =>
+    AppError.notFound("Task not found", {
+      code: "TASK_NOT_FOUND",
+    }),
+  invalidTaskId: () =>
+    AppError.badRequest("Invalid task id", {
+      code: "INVALID_TASK_ID",
+    }),
+  invalidTaskStatusTransition: () =>
+    AppError.conflict("Invalid task status transition", {
+      code: "INVALID_TASK_STATUS_TRANSITION",
+    }),
 };

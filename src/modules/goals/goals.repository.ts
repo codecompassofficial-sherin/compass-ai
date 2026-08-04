@@ -52,6 +52,27 @@ export const goalsRepository = {
     return TaskInstanceModel.find({ goalId: { $in: goalIds } }).sort({ order: 1 });
   },
 
+  async findTaskForUser(
+    taskId: Types.ObjectId,
+    goalId: Types.ObjectId,
+    userId: string,
+  ): Promise<TaskInstanceDocument | null> {
+    return TaskInstanceModel.findOne({ _id: taskId, goalId, userId });
+  },
+
+  async updateTaskStatus(input: {
+    taskId: Types.ObjectId;
+    goalId: Types.ObjectId;
+    userId: string;
+    status: TaskInstanceDocument["status"];
+  }): Promise<TaskInstanceDocument | null> {
+    return TaskInstanceModel.findOneAndUpdate(
+      { _id: input.taskId, goalId: input.goalId, userId: input.userId },
+      { status: input.status },
+      { new: true },
+    );
+  },
+
   async activateGoalWithTasks(input: {
     goalId: Types.ObjectId;
     userId: string;

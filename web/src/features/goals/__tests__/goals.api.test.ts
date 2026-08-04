@@ -46,6 +46,31 @@ describe('getGoalErrorDetails', () => {
     )
   })
 
+  it('maps TASK_NOT_FOUND to a friendly message', () => {
+    const error = buildError(404, 'TASK_NOT_FOUND', 'Task not found')
+    expect(getGoalErrorDetails(error)).toBe(
+      'This task could not be found. It may have been removed.'
+    )
+  })
+
+  it('maps INVALID_TASK_ID to a friendly message', () => {
+    const error = buildError(400, 'INVALID_TASK_ID', 'Invalid task id')
+    expect(getGoalErrorDetails(error)).toBe(
+      'This task is not valid. Please try again.'
+    )
+  })
+
+  it('maps INVALID_TASK_STATUS_TRANSITION to a friendly message', () => {
+    const error = buildError(
+      409,
+      'INVALID_TASK_STATUS_TRANSITION',
+      'Invalid transition'
+    )
+    expect(getGoalErrorDetails(error)).toBe(
+      'This task change is not allowed.'
+    )
+  })
+
   it('falls back to the server message for unknown codes', () => {
     const error = buildError(500, 'INTERNAL_SERVER_ERROR', 'Something broke')
     expect(getGoalErrorDetails(error)).toBe('Something broke')
@@ -107,5 +132,18 @@ describe('goalsApi endpoints', () => {
     const [url, options] = fetchMock.mock.calls[0]
     expect(url).toContain('/goals/goal-123/complete')
     expect(options.method).toBe('POST')
+  })
+
+  it('updates a task status with PATCH and a body', async () => {
+    fetchMock.mockClear()
+    globalThis.fetch = fetchMock.mockResolvedValue(
+      new Response(JSON.stringify({ data: { goal: {} } }), { status: 200 })
+    )
+
+    await goalsApi.updateTask('goal-123', 'task-456', 'done')
+    const [url, options] = fetchMock.mock.calls[0]
+    expect(url).toContain('/goals/goal-123/tasks/task-456')
+    expect(options.method).toBe('PATCH')
+    expect(JSON.parse(options.body)).toEqual({ status: 'done' })
   })
 })

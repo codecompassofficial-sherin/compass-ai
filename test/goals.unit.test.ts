@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { TASK_TEMPLATES } from "../src/planning/catalog/index.js";
 import { TASK_GENERATOR_VERSION } from "../src/modules/goals/goals.constants.js";
+import { goalsService } from "../src/modules/goals/goals.service.js";
 import { generateTasks } from "../src/modules/goals/task.generator.js";
 import type { TaskGenerationInput } from "../src/modules/goals/task.generator.js";
 
@@ -72,5 +73,43 @@ describe("task generator", () => {
     );
     assert.equal(tasks.length, 4);
     assert.match(tasks[0]!.description, /concepts covered/);
+  });
+});
+
+describe("task status transitions", () => {
+  it("allows todo to in_progress", () => {
+    assert.doesNotThrow(() =>
+      goalsService.validateTaskStatusTransition("todo", "in_progress"),
+    );
+  });
+
+  it("allows in_progress to done", () => {
+    assert.doesNotThrow(() =>
+      goalsService.validateTaskStatusTransition("in_progress", "done"),
+    );
+  });
+
+  it("rejects skipping todo to done", () => {
+    assert.throws(() =>
+      goalsService.validateTaskStatusTransition("todo", "done"),
+    );
+  });
+
+  it("rejects moving a done task backwards", () => {
+    assert.throws(() =>
+      goalsService.validateTaskStatusTransition("done", "todo"),
+    );
+  });
+
+  it("rejects moving in_progress backwards to todo", () => {
+    assert.throws(() =>
+      goalsService.validateTaskStatusTransition("in_progress", "todo"),
+    );
+  });
+
+  it("rejects re-applying the same status", () => {
+    assert.throws(() =>
+      goalsService.validateTaskStatusTransition("done", "done"),
+    );
   });
 });
