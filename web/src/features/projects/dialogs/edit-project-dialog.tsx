@@ -55,8 +55,8 @@ function buildUpdatePayload(
     input.title = title
   }
 
-  const description = values.description ?? undefined
-  if ((description ?? null) !== (project.description ?? null)) {
+  const description = values.description
+  if (description !== undefined && description !== project.description) {
     input.description = description
   }
 
@@ -65,13 +65,13 @@ function buildUpdatePayload(
     input.technologyStack = technologyStack
   }
 
-  const githubUrl = values.githubUrl ?? undefined
-  if ((githubUrl ?? null) !== (project.githubUrl ?? null)) {
+  const githubUrl = values.githubUrl
+  if (githubUrl !== undefined && githubUrl !== (project.githubUrl ?? '')) {
     input.githubUrl = githubUrl
   }
 
-  const liveUrl = values.liveUrl ?? undefined
-  if ((liveUrl ?? null) !== (project.liveUrl ?? null)) {
+  const liveUrl = values.liveUrl
+  if (liveUrl !== undefined && liveUrl !== (project.liveUrl ?? '')) {
     input.liveUrl = liveUrl
   }
 

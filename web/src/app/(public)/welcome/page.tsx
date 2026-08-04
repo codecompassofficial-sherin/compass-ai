@@ -51,9 +51,9 @@ export default function WelcomePage() {
           <Button
             variant="outline"
             size="lg"
-            render={<Link href="/dashboard" />}
+            render={<Link href="/register" />}
           >
-            View sample dashboard
+            Create account
           </Button>
         </div>
       </section>
@@ -68,9 +68,6 @@ export default function WelcomePage() {
               <div>
                 <h2 className="font-heading flex items-center gap-2 text-sm font-medium tracking-tight">
                   {title}
-                  <Badge variant="outline" className="text-[10px]">
-                    Soon
-                  </Badge>
                 </h2>
                 <p className="text-muted-foreground mt-1 text-sm">
                   {description}

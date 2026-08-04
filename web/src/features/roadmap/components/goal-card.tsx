@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Clock3, Play, ArrowRight } from 'lucide-react'
+import { Clock3, ArrowRight } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -74,8 +74,8 @@ export function GoalCard({ goal }: GoalCardProps) {
                 </>
               ) : (
                 <>
-                  <Play />
-                  Activate goal
+                  Open in goals
+                  <ArrowRight data-icon="inline-end" />
                 </>
               )}
             </Button>
