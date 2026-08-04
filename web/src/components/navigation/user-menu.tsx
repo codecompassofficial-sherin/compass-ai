@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -47,14 +48,18 @@ export function UserMenu() {
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" sideOffset={6} className="w-56">
-        <DropdownMenuLabel>
-          <span className="flex flex-col gap-0.5">
-            <span className="text-foreground truncate font-medium">{name}</span>
-            <span className="text-muted-foreground truncate font-normal">
-              {email}
+        <DropdownMenuGroup>
+          <DropdownMenuLabel>
+            <span className="flex flex-col gap-0.5">
+              <span className="text-foreground truncate font-medium">
+                {name}
+              </span>
+              <span className="text-muted-foreground truncate font-normal">
+                {email}
+              </span>
             </span>
-          </span>
-        </DropdownMenuLabel>
+          </DropdownMenuLabel>
+        </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem disabled>
           <Settings />
