@@ -58,6 +58,7 @@ export interface GoalStatInput {
   phaseKey: string;
   order: number;
   status: string;
+  title: string;
 }
 
 export interface PhaseStatInput {

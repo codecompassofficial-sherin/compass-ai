@@ -16,7 +16,7 @@ const PHASES = [
 ];
 
 function goal(id: string, phaseKey: string, order: number, status: string): GoalStatInput {
-  return { id, phaseKey, order, status };
+  return { id, phaseKey, order, status, title: `Goal ${id}` };
 }
 
 function input(overrides: Partial<DashboardStatsInput> = {}): DashboardStatsInput {
@@ -88,7 +88,7 @@ describe("dashboard statistics", () => {
     ];
     const current = computeCurrentPhaseAndGoal(PHASES, goals);
     assert.equal(current.currentPhase, "foundation");
-    assert.equal(current.currentGoal, "g2");
+    assert.equal(current.currentGoal, "Goal g2");
   });
 
   it("prefers an active goal within the same phase", () => {
@@ -98,7 +98,7 @@ describe("dashboard statistics", () => {
     ];
     const current = computeCurrentPhaseAndGoal(PHASES, goals);
     assert.equal(current.currentPhase, "foundation");
-    assert.equal(current.currentGoal, "g2");
+    assert.equal(current.currentGoal, "Goal g2");
   });
 
   it("returns nulls when every goal is completed", () => {
@@ -120,7 +120,7 @@ describe("dashboard statistics", () => {
     ];
     const current = computeCurrentPhaseAndGoal(PHASES, goals);
     assert.equal(current.currentPhase, "foundation");
-    assert.equal(current.currentGoal, "g-early");
+    assert.equal(current.currentGoal, "Goal g-early");
   });
 
   it("aggregates project counts into statistics", () => {

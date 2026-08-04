@@ -31,6 +31,7 @@ function toGoalStat(goal: GoalInstanceDocument) {
     phaseKey: goal.phaseKey,
     order: goal.order,
     status: goal.status,
+    title: goal.title,
   };
 }
 

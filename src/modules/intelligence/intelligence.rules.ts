@@ -170,16 +170,6 @@ function computeNextBestAction(
   }
 
   const ordered = orderedGoals(input);
-  const draft = ordered.find((goal) => goal.status === "draft");
-  if (draft) {
-    return {
-      action: "ACTIVATE_GOAL",
-      title: "Start your next learning goal",
-      description: `Begin "${draft.title}" to make progress on your roadmap.`,
-      goalId: draft.id,
-    };
-  }
-
   const active = ordered.find((goal) => goal.status === "active");
   if (active) {
     return {
@@ -187,6 +177,16 @@ function computeNextBestAction(
       title: "Continue your current goal",
       description: `Keep working on "${active.title}".`,
       goalId: active.id,
+    };
+  }
+
+  const draft = ordered.find((goal) => goal.status === "draft");
+  if (draft) {
+    return {
+      action: "ACTIVATE_GOAL",
+      title: "Start your next learning goal",
+      description: `Begin "${draft.title}" to make progress on your roadmap.`,
+      goalId: draft.id,
     };
   }
 

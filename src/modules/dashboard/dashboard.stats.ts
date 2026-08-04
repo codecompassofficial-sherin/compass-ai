@@ -71,11 +71,11 @@ export function computeCurrentPhaseAndGoal(
     }
     const activeGoal = phaseGoals.find((goal) => goal.status === "active");
     if (activeGoal) {
-      return { currentPhase: phase.key, currentGoal: activeGoal.id };
+      return { currentPhase: phase.key, currentGoal: activeGoal.title };
     }
     const nextGoal = phaseGoals.find((goal) => goal.status === "draft");
     if (nextGoal) {
-      return { currentPhase: phase.key, currentGoal: nextGoal.id };
+      return { currentPhase: phase.key, currentGoal: nextGoal.title };
     }
   }
   return { currentPhase: null, currentGoal: null };

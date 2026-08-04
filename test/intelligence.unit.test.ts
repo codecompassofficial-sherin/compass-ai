@@ -108,6 +108,32 @@ describe("career intelligence", () => {
     assert.equal(data.nextBestAction.goalId, "g-git");
   });
 
+  it("prefers an active goal over a draft goal", () => {
+    const goals = backendGoals().map((item) => ({ ...item, status: "draft" }));
+    goals[1] = { ...goals[1]!, status: "active" };
+    const data = computeIntelligence(backendInput({ goals }));
+    assert.equal(data.nextBestAction.action, "CONTINUE_GOAL");
+    assert.equal(data.nextBestAction.goalId, "g-http");
+  });
+
+  it("prefers the lowest-ordered active goal when multiple active and draft goals exist", () => {
+    const goals = [
+      goal("g-a", "foundation", 1, "completed", "git-and-github-basics", ["Git"]),
+      goal("g-b", "core-skills", 1, "active", "typescript-fundamentals", ["TypeScript"]),
+      goal("g-c", "core-skills", 2, "active", "node-and-express-apis", ["Node.js", "Express"]),
+      goal("g-d", "projects", 1, "draft", "rest-api-service", ["REST APIs"]),
+      goal("g-e", "projects", 2, "draft", "portfolio-site", ["HTML", "CSS"]),
+    ];
+    const data = computeIntelligence(backendInput({ goals }));
+    assert.equal(data.nextBestAction.action, "CONTINUE_GOAL");
+    assert.equal(data.nextBestAction.goalId, "g-b");
+    assert.equal(data.roadmap.currentGoal, "Goal g-b");
+    assert.equal(data.roadmap.currentPhase, "core-skills");
+    assert.notEqual(data.nextBestAction.goalId, "g-c");
+    assert.notEqual(data.nextBestAction.goalId, "g-d");
+    assert.notEqual(data.nextBestAction.goalId, "g-e");
+  });
+
   it("recommends starting a project once the roadmap is completed without a project", () => {
     const goals = backendGoals().map((item) => ({ ...item, status: "completed" }));
     const data = computeIntelligence(backendInput({ goals }));
@@ -232,7 +258,7 @@ describe("career intelligence", () => {
     assert.equal(data.roadmap.remainingGoals, 2);
     assert.equal(data.roadmap.overallProgress, 33);
     assert.equal(data.roadmap.currentPhase, "foundation");
-    assert.equal(data.roadmap.currentGoal, "g-http");
+    assert.equal(data.roadmap.currentGoal, "Goal g-http");
     assert.match(data.roadmap.readinessSummary, /1 of 3 goals/);
     assert.match(data.roadmap.readinessSummary, /2 remain/);
   });

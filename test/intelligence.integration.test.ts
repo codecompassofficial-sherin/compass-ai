@@ -220,7 +220,7 @@ describe("GET /api/v1/intelligence", () => {
     assert.equal(data.roadmap.totalGoals, roadmap.goals.length);
     assert.equal(data.roadmap.remainingGoals, roadmap.goals.length);
     assert.equal(data.roadmap.completedGoals, 0);
-    assert.equal(data.roadmap.currentGoal, goals[0].id);
+    assert.equal(data.roadmap.currentGoal, goals[0].title);
   });
 
   it("recommends continuing a goal when every goal is active", async () => {

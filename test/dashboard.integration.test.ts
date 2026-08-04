@@ -243,7 +243,7 @@ describe("GET /api/v1/dashboard", () => {
     assert.equal(statistics.activeGoals, 1);
     assert.equal(statistics.totalProjects, 2);
     assert.equal(statistics.completedProjects, 1);
-    assert.equal(statistics.currentGoal, firstGoal.id);
+    assert.equal(statistics.currentGoal, firstGoal.title);
     assert.equal(typeof statistics.currentPhase, "string");
     assert.equal(typeof statistics.accountCreatedAt, "string");
   });
