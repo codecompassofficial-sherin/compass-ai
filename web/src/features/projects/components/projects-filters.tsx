@@ -28,18 +28,17 @@ export function ProjectsFilters({
 }: ProjectsFiltersProps) {
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <div className="flex flex-wrap items-center gap-1.5" role="tablist">
+      <div className="flex flex-wrap items-center gap-1.5">
         {PROJECT_STATUS_FILTERS.map((option) => {
           const active = filter === option
           return (
             <button
               key={option}
               type="button"
-              role="tab"
-              aria-selected={active}
+              aria-pressed={active}
               onClick={() => onFilterChange(option)}
               className={cn(
-                'inline-flex h-7 items-center gap-1.5 rounded-lg px-2.5 text-[0.8rem] font-medium transition-colors',
+                'inline-flex h-7 items-center gap-1.5 rounded-lg px-2.5 text-[0.8rem] font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
                 active
                   ? 'bg-primary text-primary-foreground'
                   : 'text-muted-foreground hover:bg-muted hover:text-foreground'

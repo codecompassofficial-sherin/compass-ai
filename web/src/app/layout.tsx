@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 
+import { SkipToContent } from '@/components/common/skip-link'
 import { Toaster } from '@/components/ui/sonner'
 import { GlobalProviders } from '@/providers/global-providers'
 import './globals.css'
@@ -33,6 +34,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <SkipToContent />
         <GlobalProviders>
           {children}
           <Toaster />

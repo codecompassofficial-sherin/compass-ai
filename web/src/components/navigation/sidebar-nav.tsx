@@ -42,7 +42,7 @@ function NavLink({
   )
 
   const className = cn(
-    'relative flex h-8 items-center gap-2.5 rounded-md px-2.5 text-sm outline-none transition-colors',
+    'relative flex h-8 items-center gap-2.5 rounded-md px-2.5 text-sm outline-none transition-colors focus-visible:ring-3 focus-visible:ring-ring/50',
     collapsed && 'justify-center px-0',
     item.disabled
       ? 'cursor-not-allowed text-muted-foreground/50'
@@ -67,6 +67,7 @@ function NavLink({
       href={item.href}
       className={className}
       aria-current={active ? 'page' : undefined}
+      aria-label={collapsed ? item.title : undefined}
       onClick={onNavigate}
     >
       {content}
@@ -95,7 +96,10 @@ export function SidebarNav({
   onNavigate,
 }: SidebarNavProps) {
   return (
-    <nav className="flex flex-col gap-6 overflow-y-auto px-3 py-2">
+    <nav
+      aria-label="Main navigation"
+      className="flex flex-col gap-6 overflow-y-auto px-3 py-2"
+    >
       {appNavigation.map((section) => (
         <div key={section.title} className="flex flex-col gap-1">
           {!collapsed && (
