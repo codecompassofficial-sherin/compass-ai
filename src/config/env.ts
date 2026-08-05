@@ -15,6 +15,9 @@ const rawEnvSchema = z.object({
   FRONTEND_URL: z
     .url("FRONTEND_URL must be a valid URL")
     .default("http://localhost:3000"),
+  RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(15 * 60 * 1000),
+  RATE_LIMIT_MAX: z.coerce.number().int().positive().default(600),
+  AUTH_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(50),
   SMTP_HOST: z.string().min(1).optional(),
   SMTP_PORT: z.coerce.number().int().positive().max(65535).optional(),
   SMTP_USER: z.string().min(1).optional(),
@@ -34,6 +37,9 @@ const envSchema = rawEnvSchema.transform((raw) => ({
     .map((origin) => origin.trim())
     .filter((origin) => origin.length > 0),
   frontendUrl: raw.FRONTEND_URL,
+  rateLimitWindowMs: raw.RATE_LIMIT_WINDOW_MS,
+  rateLimitMax: raw.RATE_LIMIT_MAX,
+  authRateLimitMax: raw.AUTH_RATE_LIMIT_MAX,
   smtpHost: raw.SMTP_HOST,
   smtpPort: raw.SMTP_PORT ?? (raw.SMTP_HOST ? 587 : undefined),
   smtpUser: raw.SMTP_USER,
@@ -46,8 +52,7 @@ const result = envSchema.safeParse(process.env);
 if (!result.success) {
   const issues = result.error.issues.map((issue) => {
     const path = issue.path.join(".");
-    const input = typeof issue.input === "string" ? issue.input : undefined;
-    return `${path}${input ? ` (received: ${JSON.stringify(input)})` : ""}: ${issue.message}`;
+    return `${path}: ${issue.message}`;
   });
   throw new Error(`Invalid environment configuration:\n- ${issues.join("\n- ")}`);
 }

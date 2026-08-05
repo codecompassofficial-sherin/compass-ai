@@ -44,6 +44,7 @@ async function bootstrap(): Promise<void> {
           process.exit(1);
         });
     });
+    server.closeIdleConnections();
   };
 
   process.on("SIGTERM", () => shutdown("SIGTERM"));

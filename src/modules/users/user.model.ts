@@ -28,7 +28,7 @@ const userSchema = new Schema<UserDocument>(
       trim: true,
       maxlength: 254,
     },
-    passwordHash: { type: String, required: true },
+    passwordHash: { type: String, required: true, select: false },
     role: { type: String, enum: ["USER", "ADMIN"] as Role[], default: "USER" },
     isEmailVerified: { type: Boolean, default: false },
     avatarUrl: { type: String, maxlength: 500 },

@@ -13,7 +13,7 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.test.json",
-    "test": "node --import tsx --test test/auth.integration.test.ts test/profile.integration.test.ts test/assessment.integration.test.ts test/roadmap.unit.test.ts test/roadmap.integration.test.ts test/goals.unit.test.ts test/goals.integration.test.ts test/projects.unit.test.ts test/projects.integration.test.ts test/dashboard.unit.test.ts test/dashboard.integration.test.ts test/intelligence.unit.test.ts test/intelligence.integration.test.ts",
+    "test": "node --import tsx --experimental-test-module-mocks --test test/auth.integration.test.ts test/auth.service.unit.test.ts test/profile.integration.test.ts test/assessment.integration.test.ts test/error-handler.integration.test.ts test/roadmap.unit.test.ts test/roadmap.integration.test.ts test/goals.unit.test.ts test/goals.integration.test.ts test/projects.unit.test.ts test/projects.integration.test.ts test/dashboard.unit.test.ts test/dashboard.integration.test.ts test/intelligence.unit.test.ts test/intelligence.integration.test.ts",
     "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\""
   },
   "license": "UNLICENSED",
@@ -23,6 +23,8 @@
     "cors": "2.8.6",
     "dotenv": "17.4.2",
     "express": "5.2.1",
+    "express-rate-limit": "8.6.2",
+    "helmet": "8.3.0",
     "jsonwebtoken": "9.0.3",
     "mongoose": "8.24.2",
     "nodemailer": "9.0.3",

@@ -1,6 +1,7 @@
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import express from "express";
+import helmet from "helmet";
 import type { Express } from "express";
 import { apiRouter } from "./api/index.js";
 import { API_ROOT, BODY_LIMIT } from "./config/constants.js";
@@ -16,6 +17,7 @@ export function createApp(): Express {
   app.disable("x-powered-by");
   app.set("trust proxy", 1);
 
+  app.use(helmet());
   app.use(cors({ origin: env.corsOrigins, credentials: true }));
   app.use(requestId);
   app.use(httpLogger);

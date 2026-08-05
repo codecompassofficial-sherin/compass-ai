@@ -19,7 +19,7 @@ function isDuplicateKeyError(err: unknown): boolean {
 
 export const authRepository = {
   async findUserByEmail(email: string): Promise<UserDocument | null> {
-    return UserModel.findOne({ email });
+    return UserModel.findOne({ email }).select("+passwordHash");
   },
 
   async findUserById(id: string): Promise<UserDocument | null> {

@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { apiRateLimiter, authRateLimiter } from "../../middleware/rateLimit.js";
 import { assessmentRoutes } from "../../modules/assessment/assessment.routes.js";
 import { authRoutes } from "../../modules/auth/auth.routes.js";
 import { dashboardRoutes } from "../../modules/dashboard/dashboard.routes.js";
@@ -12,7 +13,8 @@ import { roadmapRoutes } from "../../modules/roadmap/roadmap.routes.js";
 const router = Router();
 
 router.use("/", healthRoutes);
-router.use("/auth", authRoutes);
+router.use(apiRateLimiter);
+router.use("/auth", authRateLimiter, authRoutes);
 router.use("/profile", profileRoutes);
 router.use("/assessment", assessmentRoutes);
 router.use("/roadmap", roadmapRoutes);
