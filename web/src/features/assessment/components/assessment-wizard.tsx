@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { AnimatePresence, motion } from 'framer-motion'
@@ -24,6 +24,7 @@ import {
   useUpdateAssessment,
 } from '@/features/assessment/hooks/useAssessment'
 import { TOTAL_STEPS, WIZARD_STEPS } from '@/features/assessment/lib/wizard'
+import { clearDraft, readDraft, writeDraft } from '@/features/assessment/lib/draft'
 import { WizardProgress } from './wizard-progress'
 import { CareerGoalStep } from './steps/career-goal-step'
 import { ExperienceStep } from './steps/experience-step'
@@ -60,10 +61,15 @@ function toAssessmentInput(values: AssessmentFormValues): AssessmentFormValues {
     : { ...values, additionalNotes: undefined }
 }
 
+const ADVANCE_COOLDOWN_MS = 250
+
 export function AssessmentWizard({ assessment }: AssessmentWizardProps) {
   const router = useRouter()
   const [stepIndex, setStepIndex] = useState(0)
   const [formError, setFormError] = useState<string | null>(null)
+  const [isAdvancing, setIsAdvancing] = useState(false)
+  const advancingRef = useRef(false)
+  const lastAdvanceAtRef = useRef(0)
 
   const createMutation = useCreateAssessment()
   const updateMutation = useUpdateAssessment()
@@ -74,14 +80,54 @@ export function AssessmentWizard({ assessment }: AssessmentWizardProps) {
     defaultValues: toFormValues(assessment),
   })
 
+  useEffect(() => {
+    const draft = readDraft()
+    if (!draft) {
+      return
+    }
+    const safeStepIndex = Math.min(
+      Math.max(draft.stepIndex, 0),
+      TOTAL_STEPS - 1
+    )
+    setStepIndex(safeStepIndex)
+    form.reset({ ...toFormValues(assessment), ...draft.values })
+  }, [assessment, form])
+
+  useEffect(() => {
+    const persist = () => {
+      writeDraft({
+        stepIndex,
+        values: form.getValues(),
+      })
+    }
+
+    persist()
+    const subscription = form.watch(() => persist())
+    return () => subscription.unsubscribe()
+  }, [form, stepIndex])
+
   const step = WIZARD_STEPS[stepIndex]
   const isLastStep = stepIndex === TOTAL_STEPS - 1
 
   async function handleNext() {
+    if (advancingRef.current) {
+      return
+    }
+    if (Date.now() - lastAdvanceAtRef.current < ADVANCE_COOLDOWN_MS) {
+      return
+    }
+    advancingRef.current = true
+    setIsAdvancing(true)
     setFormError(null)
-    const valid = await form.trigger(step.fields)
-    if (valid) {
-      setStepIndex((current) => Math.min(current + 1, TOTAL_STEPS - 1))
+    try {
+      const valid = await form.trigger(step.fields)
+      if (valid) {
+        lastAdvanceAtRef.current = Date.now()
+        setStepIndex((current) => Math.min(current + 1, TOTAL_STEPS - 1))
+      }
+    } finally {
+      advancingRef.current = false
+      setIsAdvancing(false)
     }
   }
 
@@ -96,6 +142,10 @@ export function AssessmentWizard({ assessment }: AssessmentWizardProps) {
   }
 
   async function onSubmit(values: AssessmentFormValues) {
+    if (Date.now() - lastAdvanceAtRef.current < ADVANCE_COOLDOWN_MS) {
+      return
+    }
+    lastAdvanceAtRef.current = Date.now()
     setFormError(null)
     try {
       if (assessment) {
@@ -105,6 +155,7 @@ export function AssessmentWizard({ assessment }: AssessmentWizardProps) {
         await createMutation.mutateAsync(toAssessmentInput(values))
         toast.success('Assessment saved')
       }
+      clearDraft()
       router.push('/roadmaps')
       router.refresh()
     } catch (error) {
@@ -189,7 +240,11 @@ export function AssessmentWizard({ assessment }: AssessmentWizardProps) {
                 )}
               </Button>
             ) : (
-              <Button type="button" onClick={handleNext}>
+              <Button
+                type="button"
+                onClick={handleNext}
+                disabled={isAdvancing}
+              >
                 Continue
                 <ArrowRight data-icon="inline-end" />
               </Button>

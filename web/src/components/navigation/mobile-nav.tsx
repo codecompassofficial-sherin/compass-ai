@@ -37,7 +37,7 @@ export function MobileNav() {
           <Logo />
         </div>
         <div className="flex-1 overflow-y-auto py-4">
-          <SidebarNav />
+          <SidebarNav onNavigate={() => setMobileOpen(false)} />
         </div>
         <div className="border-t p-4">
           <p className="text-muted-foreground text-xs">

@@ -13,7 +13,15 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 
-function NavLink({ item, collapsed }: { item: NavItem; collapsed: boolean }) {
+function NavLink({
+  item,
+  collapsed,
+  onNavigate,
+}: {
+  item: NavItem
+  collapsed: boolean
+  onNavigate?: () => void
+}) {
   const pathname = usePathname()
   const active = pathname === item.href || pathname.startsWith(`${item.href}/`)
 
@@ -59,6 +67,7 @@ function NavLink({ item, collapsed }: { item: NavItem; collapsed: boolean }) {
       href={item.href}
       className={className}
       aria-current={active ? 'page' : undefined}
+      onClick={onNavigate}
     >
       {content}
     </Link>
@@ -78,9 +87,13 @@ function NavLink({ item, collapsed }: { item: NavItem; collapsed: boolean }) {
 
 interface SidebarNavProps {
   collapsed?: boolean
+  onNavigate?: () => void
 }
 
-export function SidebarNav({ collapsed = false }: SidebarNavProps) {
+export function SidebarNav({
+  collapsed = false,
+  onNavigate,
+}: SidebarNavProps) {
   return (
     <nav className="flex flex-col gap-6 overflow-y-auto px-3 py-2">
       {appNavigation.map((section) => (
@@ -91,7 +104,12 @@ export function SidebarNav({ collapsed = false }: SidebarNavProps) {
             </p>
           )}
           {section.items.map((item) => (
-            <NavLink key={item.href} item={item} collapsed={collapsed} />
+            <NavLink
+              key={item.href}
+              item={item}
+              collapsed={collapsed}
+              onNavigate={onNavigate}
+            />
           ))}
         </div>
       ))}
