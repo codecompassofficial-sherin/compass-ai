@@ -104,15 +104,20 @@ async function sendVerificationEmail(user: UserDocument): Promise<string | undef
     expiresAt: new Date(Date.now() + EMAIL_VERIFICATION_TOKEN_TTL_MS),
   });
   const url = `${env.frontendUrl}/verify-email?token=${encodeURIComponent(token)}`;
-  await sendMail({
-    to: user.email,
-    subject: "Verify your Compass AI email",
-    html:
-      `<p>Hi ${escapeHtml(user.firstName)},</p>` +
-      `<p>Verify your email address by clicking the link below:</p>` +
-      `<p><a href="${url}">${url}</a></p>` +
-      `<p>This link expires in 24 hours.</p>`,
-  });
+  try {
+    await sendMail({
+      to: user.email,
+      subject: "Verify your Compass AI email",
+      html:
+        `<p>Hi ${escapeHtml(user.firstName)},</p>` +
+        `<p>Verify your email address by clicking the link below:</p>` +
+        `<p><a href="${url}">${url}</a></p>` +
+        `<p>This link expires in 24 hours.</p>`,
+    });
+  } catch (err) {
+    logger.error({ err, userId: user._id.toString() }, "Failed to send verification email");
+    return undefined;
+  }
   return env.nodeEnv === "production" ? undefined : token;
 }
 

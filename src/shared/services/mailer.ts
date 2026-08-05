@@ -4,6 +4,9 @@ import { env } from "../../config/env.js";
 import { logger } from "../logger/logger.js";
 
 function createTransport(): Transporter {
+  if (env.nodeEnv === "test") {
+    return nodemailer.createTransport({ jsonTransport: true });
+  }
   if (env.smtpHost) {
     return nodemailer.createTransport({
       host: env.smtpHost,
@@ -20,6 +23,7 @@ function createTransport(): Transporter {
 }
 
 const transporter = createTransport();
+const useJsonTransport = env.nodeEnv === "test" || !env.smtpHost;
 
 export interface MailMessage {
   to: string;
@@ -34,12 +38,12 @@ export async function sendMail(message: MailMessage): Promise<void> {
     ...message,
   });
 
-  if (env.smtpHost) {
+  if (useJsonTransport) {
+    logger.debug({ mail: info.message }, "Email generated (no SMTP configured)");
+  } else {
     logger.info(
       { messageId: info.messageId, to: message.to, subject: message.subject },
       "Email sent",
     );
-  } else {
-    logger.debug({ mail: info.message }, "Email generated (no SMTP configured)");
   }
 }

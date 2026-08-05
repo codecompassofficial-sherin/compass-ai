@@ -4,6 +4,14 @@ import { AppError } from "../shared/common/AppError.js";
 import { errorBody } from "../shared/common/ApiResponse.js";
 import { logger } from "../shared/logger/logger.js";
 
+function isBodyParserError(err: unknown): err is { type: string } {
+  return (
+    typeof err === "object" &&
+    err !== null &&
+    typeof (err as { type?: unknown }).type === "string"
+  );
+}
+
 export function errorHandler(
   err: unknown,
   req: Request,
@@ -13,6 +21,25 @@ export function errorHandler(
   if (res.headersSent) {
     next(err);
     return;
+  }
+
+  if (isBodyParserError(err)) {
+    if (err.type === "entity.parse.failed") {
+      logger.warn({ err, reqId: req.id }, "Malformed JSON request body");
+      res.status(400).json({
+        success: false,
+        error: errorBody("Invalid JSON request body", { code: "INVALID_JSON" }),
+      });
+      return;
+    }
+    if (err.type === "entity.too.large") {
+      logger.warn({ err, reqId: req.id }, "Request body exceeds the size limit");
+      res.status(413).json({
+        success: false,
+        error: errorBody("Request body is too large", { code: "PAYLOAD_TOO_LARGE" }),
+      });
+      return;
+    }
   }
 
   if (err instanceof AppError) {
