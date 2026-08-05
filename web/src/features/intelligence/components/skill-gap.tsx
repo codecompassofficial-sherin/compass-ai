@@ -86,7 +86,7 @@ export function SkillGap({ skillGap }: SkillGapProps) {
                     <div className="flex flex-wrap gap-1.5">
                       {skills.map((skill) => (
                         <Badge key={skill} variant={group.badgeVariant}>
-                          {skill}
+                          <span className="truncate">{skill}</span>
                         </Badge>
                       ))}
                     </div>

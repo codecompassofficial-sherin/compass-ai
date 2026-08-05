@@ -55,7 +55,7 @@ export function CareerIntelligence({ intelligence }: CareerIntelligenceProps) {
             <div className="flex flex-wrap gap-1.5">
               {skillGap.recommendedSkills.map((skill) => (
                 <Badge key={skill} variant="outline" className="h-6">
-                  {skill}
+                  <span className="truncate">{skill}</span>
                 </Badge>
               ))}
             </div>

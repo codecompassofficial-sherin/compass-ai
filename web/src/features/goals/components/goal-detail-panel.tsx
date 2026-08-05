@@ -79,9 +79,11 @@ export function GoalDetailPanel({
             <h2 className="font-heading min-w-0 text-lg font-semibold tracking-tight">
               {display.title}
             </h2>
-            <div className="flex shrink-0 flex-col items-end gap-1.5">
+            <div className="flex min-w-0 flex-col items-end gap-1.5">
               <Badge variant={statusMeta.variant}>{statusMeta.label}</Badge>
-              <Badge variant="ghost">{phaseName}</Badge>
+              <Badge variant="ghost" className="max-w-full">
+                <span className="truncate">{phaseName}</span>
+              </Badge>
             </div>
           </div>
 

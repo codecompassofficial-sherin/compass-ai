@@ -78,12 +78,12 @@ export function IntelligenceHeader({
             </Badge>
             <Badge variant="secondary" className="gap-1">
               <TrendingUp className="shrink-0" />
-              {stage}
+              <span className="truncate">{stage}</span>
             </Badge>
             {phaseName && (
               <Badge variant="outline" className="gap-1">
                 <Map className="shrink-0" />
-                {phaseName}
+                <span className="truncate">{phaseName}</span>
               </Badge>
             )}
             {roadmap.currentGoal && (

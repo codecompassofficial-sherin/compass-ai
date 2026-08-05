@@ -98,8 +98,8 @@ export function WelcomeHero({ dashboard, intelligence }: WelcomeHeroProps) {
             <div className="flex shrink-0 flex-wrap gap-1.5">
               {chips.map((chip) => (
                 <Badge key={chip.label} variant="outline" className="h-6 gap-1">
-                  <chip.icon className="size-3" />
-                  {chip.label}
+                  <chip.icon className="size-3 shrink-0" />
+                  <span className="truncate">{chip.label}</span>
                 </Badge>
               ))}
             </div>
