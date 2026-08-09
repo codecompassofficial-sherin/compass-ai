@@ -8,31 +8,14 @@ import {
   type QueryClient,
 } from '@tanstack/react-query'
 
-import { ApiError } from '@/lib/api'
-import { authApi } from '@/features/auth/auth.api'
-import { useAuthStore } from '@/features/auth/auth.store'
+import {
+  isUnauthorized,
+  refreshSession,
+} from '@/features/auth/session'
 import { assessmentApi } from '@/features/assessment/assessment.api'
 import type { AssessmentFormValues } from '@/features/assessment/assessment.validation'
 
 const ASSESSMENT_KEY = 'assessment'
-
-function isUnauthorized(error: unknown): boolean {
-  return error instanceof ApiError && error.status === 401
-}
-
-function refreshSession(): Promise<boolean> {
-  return (async () => {
-    try {
-      const { accessToken } = await authApi.refresh()
-      const { user } = await authApi.getMe()
-      useAuthStore.getState().setSession(user, accessToken)
-      return true
-    } catch {
-      useAuthStore.getState().clearSession()
-      return false
-    }
-  })()
-}
 
 function invalidateRelatedQueries(queryClient: QueryClient) {
   queryClient.invalidateQueries({ queryKey: [ASSESSMENT_KEY] })

@@ -4,26 +4,10 @@ import { useCallback } from 'react'
 
 import { authApi } from '@/features/auth/auth.api'
 import { useAuthStore } from '@/features/auth/auth.store'
+import { restoreSession } from '@/features/auth/session'
 import type { LoginInput, RegisterInput } from '@/features/auth/auth.types'
 
-let restorePromise: Promise<void> | null = null
-
-async function restoreOnce(): Promise<void> {
-  try {
-    const { accessToken } = await authApi.refresh()
-    const { user } = await authApi.getMe()
-    useAuthStore.getState().setSession(user, accessToken)
-  } catch {
-    useAuthStore.getState().clearSession()
-  }
-}
-
-export function restoreSession(): Promise<void> {
-  if (!restorePromise) {
-    restorePromise = restoreOnce()
-  }
-  return restorePromise
-}
+export { restoreSession }
 
 export function useAuth() {
   const status = useAuthStore((state) => state.status)

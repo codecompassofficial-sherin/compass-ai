@@ -3,34 +3,17 @@
 import { useCallback, useEffect, useRef } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 
-import { ApiError } from '@/lib/api'
-import { authApi } from '@/features/auth/auth.api'
-import { useAuthStore } from '@/features/auth/auth.store'
+import {
+  isUnauthorized,
+  refreshSession,
+} from '@/features/auth/session'
 import {
   dashboardApi,
   intelligenceApi,
   projectsApi,
 } from '@/features/dashboard/dashboard.api'
 
-function isUnauthorized(error: unknown): boolean {
-  return error instanceof ApiError && error.status === 401
-}
-
 const DASHBOARD_KEYS = ['dashboard', 'intelligence', 'projects'] as const
-
-function refreshSession(): Promise<boolean> {
-  return (async () => {
-    try {
-      const { accessToken } = await authApi.refresh()
-      const { user } = await authApi.getMe()
-      useAuthStore.getState().setSession(user, accessToken)
-      return true
-    } catch {
-      useAuthStore.getState().clearSession()
-      return false
-    }
-  })()
-}
 
 export function useDashboard() {
   const queryClient = useQueryClient()
