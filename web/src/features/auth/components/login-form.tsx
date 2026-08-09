@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -30,7 +29,6 @@ import { Input } from '@/components/ui/input'
 const REMEMBER_ME_KEY = 'compass-remember-me'
 
 export function LoginForm() {
-  const router = useRouter()
   const { login } = useAuth()
   const [formError, setFormError] = useState<string | null>(null)
 
@@ -54,8 +52,6 @@ export function LoginForm() {
     try {
       await login({ email: values.email, password: values.password })
       toast.success('Signed in successfully')
-      router.push('/dashboard')
-      router.refresh()
     } catch (error) {
       const details = getAuthErrorDetails(error)
       setFormError(details.message)

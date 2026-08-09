@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -28,7 +27,6 @@ import {
 import { Input } from '@/components/ui/input'
 
 export function RegisterForm() {
-  const router = useRouter()
   const { register } = useAuth()
   const [formError, setFormError] = useState<string | null>(null)
 
@@ -56,8 +54,6 @@ export function RegisterForm() {
         password: values.password,
       })
       toast.success('Account created successfully')
-      router.push('/dashboard')
-      router.refresh()
     } catch (error) {
       const details = getAuthErrorDetails(error)
       setFormError(details.message)

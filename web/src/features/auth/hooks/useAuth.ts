@@ -1,7 +1,6 @@
 'use client'
 
 import { useCallback } from 'react'
-import { useRouter } from 'next/navigation'
 
 import { authApi } from '@/features/auth/auth.api'
 import { useAuthStore } from '@/features/auth/auth.store'
@@ -27,7 +26,6 @@ export function restoreSession(): Promise<void> {
 }
 
 export function useAuth() {
-  const router = useRouter()
   const status = useAuthStore((state) => state.status)
   const user = useAuthStore((state) => state.user)
   const isAuthenticated = status === 'authenticated'
@@ -52,9 +50,7 @@ export function useAuth() {
       // Local session is cleared regardless of the server response.
     }
     useAuthStore.getState().clearSession()
-    router.replace('/login')
-    router.refresh()
-  }, [router])
+  }, [])
 
   return { status, user, isAuthenticated, isLoading, login, register, logout }
 }

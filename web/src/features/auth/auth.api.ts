@@ -1,4 +1,4 @@
-import { ApiError, apiRequest, isRecord } from '@/lib/api'
+import { ApiError, apiRequest, isRecord, setAccessToken } from '@/lib/api'
 
 import type {
   AuthResponse,
@@ -13,8 +13,13 @@ export const authApi = {
   register: (input: RegisterInput) =>
     apiRequest<AuthResponse>('/auth/register', { method: 'POST', body: input }),
   logout: () => apiRequest<null>('/auth/logout', { method: 'POST' }),
-  refresh: () =>
-    apiRequest<{ accessToken: string }>('/auth/refresh', { method: 'POST' }),
+  refresh: async () => {
+    const result = await apiRequest<{ accessToken: string }>('/auth/refresh', {
+      method: 'POST',
+    })
+    setAccessToken(result.accessToken)
+    return result
+  },
   getMe: () => apiRequest<{ user: User }>('/auth/me'),
 }
 
