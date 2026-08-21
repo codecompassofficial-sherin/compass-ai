@@ -15,7 +15,7 @@ export default function PublicLayout({
           <ThemeToggle />
         </div>
       </header>
-      <main className="flex flex-1 flex-col">
+      <main id="main" tabIndex={-1} className="flex flex-1 flex-col">
         <PageContainer>{children}</PageContainer>
       </main>
       <footer className="border-t py-6">

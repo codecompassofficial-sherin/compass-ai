@@ -2,8 +2,9 @@ import Link from 'next/link'
 import { ArrowRight, ClipboardList, Map, Sparkles, Target } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+import { buttonVariants } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { cn } from '@/lib/utils'
 
 const features = [
   {
@@ -44,17 +45,19 @@ export default function WelcomePage() {
           assessments, roadmaps, and AI-powered guidance.
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-          <Button size="lg" render={<Link href="/dashboard" />}>
+          <Link
+            href="/dashboard"
+            className={cn(buttonVariants({ size: 'lg' }), 'shrink-0')}
+          >
             Open the app
             <ArrowRight data-icon="inline-end" />
-          </Button>
-          <Button
-            variant="outline"
-            size="lg"
-            render={<Link href="/register" />}
+          </Link>
+          <Link
+            href="/register"
+            className={cn(buttonVariants({ variant: 'outline', size: 'lg' }), 'shrink-0')}
           >
             Create account
-          </Button>
+          </Link>
         </div>
       </section>
 
