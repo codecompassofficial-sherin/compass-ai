@@ -23,6 +23,9 @@ const rawEnvSchema = z.object({
   SMTP_USER: z.string().min(1).optional(),
   SMTP_PASS: z.string().optional(),
   SMTP_FROM: z.string().min(1).optional(),
+  ADZUNA_APP_ID: z.string().min(1).optional(),
+  ADZUNA_APP_KEY: z.string().min(1).optional(),
+  JOOBLE_API_KEY: z.string().min(1).optional(),
 });
 
 const envSchema = rawEnvSchema.transform((raw) => ({
@@ -45,6 +48,9 @@ const envSchema = rawEnvSchema.transform((raw) => ({
   smtpUser: raw.SMTP_USER,
   smtpPass: raw.SMTP_PASS,
   smtpFrom: raw.SMTP_FROM,
+  adzunaAppId: raw.ADZUNA_APP_ID,
+  adzunaAppKey: raw.ADZUNA_APP_KEY,
+  joobleApiKey: raw.JOOBLE_API_KEY,
 }));
 
 const result = envSchema.safeParse(process.env);
