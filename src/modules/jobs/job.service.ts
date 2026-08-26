@@ -1,7 +1,8 @@
 import type { JobDocument } from "./job.model.js";
-import type { NormalizedJob } from "./job.types.js";
+import type { PublicJob, JobSearchParams } from "./job.types.js";
+import { jobFetcher, type FetchJobsResult } from "./job.fetcher.js";
 
-function toPublicJob(job: JobDocument): NormalizedJob {
+function toPublicJob(job: JobDocument): PublicJob {
   return {
     id: job._id.toString(),
     source: job.source,
@@ -34,7 +35,12 @@ async function getHealth(): Promise<{ status: string; module: string; timestamp:
   };
 }
 
+async function fetchJobs(params: JobSearchParams): Promise<FetchJobsResult> {
+  return jobFetcher.fetchJobs(params);
+}
+
 export const jobService = {
   toPublicJob,
   getHealth,
+  fetchJobs,
 };

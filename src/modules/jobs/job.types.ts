@@ -23,7 +23,10 @@ export interface NormalizedJob {
   postedAt?: string;
   fetchedAt: string;
   isActive: boolean;
+  normalizedHash: string;
 }
+
+export type PublicJob = Omit<NormalizedJob, "normalizedHash">;
 
 export interface JobSearchParams {
   keywords: string;
