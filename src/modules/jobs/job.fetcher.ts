@@ -4,7 +4,7 @@ import { createAdzunaAdapter } from "./sources/adzuna.adapter.js";
 import { createJoobleAdapter } from "./sources/jooble.adapter.js";
 import { jobNormalizer } from "./job.normalizer.js";
 import { jobRepository } from "./job.repository.js";
-import { jobService } from "./job.service.js";
+import { toPublicJob } from "./job.mapper.js";
 
 export interface FetchJobsResult {
   jobs: PublicJob[];
@@ -102,7 +102,7 @@ export async function fetchJobs(params: JobSearchParams): Promise<FetchJobsResul
           normalizedHash: job.normalizedHash,
           isActive: true,
         });
-        return jobService.toPublicJob(updated);
+        return toPublicJob(updated);
       } catch {
         return null;
       }
