@@ -5,12 +5,33 @@ import { createJoobleAdapter } from "./sources/jooble.adapter.js";
 import { jobNormalizer } from "./job.normalizer.js";
 import { jobRepository } from "./job.repository.js";
 import { toPublicJob } from "./job.mapper.js";
+import { logger } from "../../shared/logger/logger.js";
+
+const SECRET_ENV_KEYS = ["ADZUNA_APP_ID", "ADZUNA_APP_KEY", "JOOBLE_API_KEY"] as const;
 
 export interface FetchJobsResult {
   jobs: PublicJob[];
   /** Total number of active jobs in the DB matching the current filter (not limited to the current page). */
   total: number;
   page: number;
+}
+
+function errorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  if (typeof error === "string") return error;
+  return "Unknown error";
+}
+
+function sanitizeErrorMessage(message: string): string {
+  let sanitized = message;
+  for (const key of SECRET_ENV_KEYS) {
+    const value = process.env[key];
+    if (value) {
+      sanitized = sanitized.split(value).join("[redacted]");
+    }
+  }
+  sanitized = sanitized.replace(/https?:\/\/\S+/gi, "[url]");
+  return sanitized.replace(/([?&](?:app_id|app_key|api_key|apikey|key|token)=)[^&\s]+/gi, "$1[redacted]");
 }
 
 function collectAdapters(): JobSourceAdapter[] {
@@ -63,7 +84,17 @@ export async function fetchJobs(params: JobSearchParams): Promise<FetchJobsResul
       try {
         const results = await adapter.search(searchParams);
         return results.map((r) => ({ raw: r, source: adapter.sourceName }));
-      } catch {
+      } catch (error) {
+        logger.warn(
+          {
+            source: adapter.sourceName,
+            operation: "fetch",
+            error: sanitizeErrorMessage(errorMessage(error)),
+            keywords: params.keywords,
+            page,
+          },
+          "Job provider failed; skipping source",
+        );
         return [];
       }
     }),
@@ -103,7 +134,17 @@ export async function fetchJobs(params: JobSearchParams): Promise<FetchJobsResul
           isActive: true,
         });
         return toPublicJob(updated);
-      } catch {
+      } catch (error) {
+        logger.error(
+          {
+            source: job.source,
+            operation: "upsert",
+            error: sanitizeErrorMessage(errorMessage(error)),
+            keywords: params.keywords,
+            page,
+          },
+          "Job upsert failed; skipping job",
+        );
         return null;
       }
     }),
