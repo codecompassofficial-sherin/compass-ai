@@ -34,6 +34,24 @@ function sanitizeErrorMessage(message: string): string {
   return sanitized.replace(/([?&](?:app_id|app_key|api_key|apikey|key|token)=)[^&\s]+/gi, "$1[redacted]");
 }
 
+function getSourceId(raw: unknown): string | undefined {
+  if (!raw || typeof raw !== "object") return undefined;
+  const sourceId = (raw as { sourceId?: unknown }).sourceId;
+  return typeof sourceId === "string" && sourceId.trim().length > 0 ? sourceId : undefined;
+}
+
+function normalizationSkipReason(raw: unknown): string | undefined {
+  if (!raw || typeof raw !== "object") return "record is not an object";
+  const record = raw as { title?: unknown; sourceId?: unknown };
+  if (typeof record.title !== "string" || record.title.trim().length === 0) {
+    return "missing or invalid title";
+  }
+  if (typeof record.sourceId !== "string" || record.sourceId.trim().length === 0) {
+    return "missing or invalid sourceId";
+  }
+  return undefined;
+}
+
 function collectAdapters(): JobSourceAdapter[] {
   const adapters: JobSourceAdapter[] = [];
   const adzuna = createAdzunaAdapter();
@@ -83,6 +101,19 @@ export async function fetchJobs(params: JobSearchParams): Promise<FetchJobsResul
     adapters.map(async (adapter) => {
       try {
         const results = await adapter.search(searchParams);
+        if (!Array.isArray(results)) {
+          logger.warn(
+            {
+              source: adapter.sourceName,
+              operation: "fetch",
+              reason: "adapter returned a non-array result",
+              keywords: params.keywords,
+              page,
+            },
+            "Job provider returned a non-array result; treating as empty",
+          );
+          return [];
+        }
         return results.map((r) => ({ raw: r, source: adapter.sourceName }));
       } catch (error) {
         logger.warn(
@@ -104,9 +135,36 @@ export async function fetchJobs(params: JobSearchParams): Promise<FetchJobsResul
     r.status === "fulfilled" ? r.value : [],
   );
 
-  const normalized = taggedResults.map(({ raw, source }) =>
-    jobNormalizer.normalizeJobResult(raw, source),
-  );
+  const normalized: NormalizedJob[] = [];
+  for (const { raw, source } of taggedResults) {
+    const sourceId = getSourceId(raw);
+    const reason = normalizationSkipReason(raw);
+    if (reason) {
+      logger.warn(
+        {
+          source,
+          operation: "normalize",
+          reason,
+          ...(sourceId ? { sourceId } : {}),
+        },
+        "Skipping malformed job record",
+      );
+      continue;
+    }
+    try {
+      normalized.push(jobNormalizer.normalizeJobResult(raw, source));
+    } catch (error) {
+      logger.warn(
+        {
+          source,
+          operation: "normalize",
+          reason: sanitizeErrorMessage(errorMessage(error)),
+          ...(sourceId ? { sourceId } : {}),
+        },
+        "Skipping job record that failed normalization",
+      );
+    }
+  }
 
   const deduplicated = deduplicateByHash(normalized);
 

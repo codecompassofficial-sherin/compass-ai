@@ -104,6 +104,11 @@ export function normalizeJobResult(raw: RawJobResult, source: JobSource): Normal
 
   const { salaryMin, salaryMax } = normalizeSalary(raw.salaryMin, raw.salaryMax);
 
+  const postedAt =
+    raw.postedAt instanceof Date && !Number.isNaN(raw.postedAt.getTime())
+      ? raw.postedAt.toISOString()
+      : undefined;
+
   const isRemote = detectRemote(raw.isRemote, raw.title ?? "", raw.location ?? "", raw.description ?? "");
 
   return {
@@ -124,7 +129,7 @@ export function normalizeJobResult(raw: RawJobResult, source: JobSource): Normal
     seniority: extractSeniority(raw.title ?? "", raw.description ?? ""),
     skills: Array.isArray(raw.skills) ? [...raw.skills] : [],
     tags: Array.isArray(raw.tags) ? [...raw.tags] : [],
-    ...(raw.postedAt ? { postedAt: raw.postedAt.toISOString() } : {}),
+    ...(postedAt ? { postedAt } : {}),
     fetchedAt: new Date().toISOString(),
     isActive: true,
     normalizedHash: computeNormalizedHash(source, title, company),

@@ -318,4 +318,94 @@ describe("job fetcher", () => {
     assert.equal(loggerWarn.mock.callCount(), 2);
     assert.equal(loggerError.mock.callCount(), 1);
   });
+
+  it("returns valid jobs when a batch contains a malformed record", async () => {
+    adzunaSearch.mock.mockImplementation(async () => [
+      makeRaw({ sourceId: "a-1", title: "Valid One", company: "CoA" }),
+      makeRaw({ sourceId: "bad-1", title: "" }),
+      makeRaw({ sourceId: "a-2", title: "Valid Two", company: "CoB" }),
+    ]);
+
+    const result = await fetchJobs({ keywords: "engineer", sources: ["adzuna"] });
+
+    assert.equal(result.jobs.length, 2);
+    assert.deepEqual(
+      result.jobs.map((job) => job.title),
+      ["Valid One", "Valid Two"],
+    );
+    assert.equal(loggerWarn.mock.callCount(), 1);
+  });
+
+  it("logs a skipped record with source, operation, reason, and sourceId but not its description", async () => {
+    const description = "TOP_SECRET_DESCRIPTION_MARKER_9f3c";
+    adzunaSearch.mock.mockImplementation(async () => [
+      makeRaw({ sourceId: "bad-1", title: "", description }),
+    ]);
+
+    await fetchJobs({ keywords: "engineer", sources: ["adzuna"] });
+
+    assert.equal(loggerWarn.mock.callCount(), 1);
+    const [fields] = loggerWarn.mock.calls[0]!.arguments as [Record<string, unknown>, string];
+    assert.equal(fields.source, "adzuna");
+    assert.equal(fields.operation, "normalize");
+    assert.equal(fields.reason, "missing or invalid title");
+    assert.equal(fields.sourceId, "bad-1");
+
+    const logged = JSON.stringify(loggerWarn.mock.calls);
+    assert.equal(logged.includes(description), false);
+  });
+
+  it("skips a record whose normalization throws and continues with the batch", async () => {
+    adzunaSearch.mock.mockImplementation(async () => [
+      makeRaw({ sourceId: "throw-1", title: "Broken", summary: 123 as unknown as string }),
+      makeRaw({ sourceId: "a-1", title: "Valid", company: "CoA" }),
+    ]);
+
+    const result = await fetchJobs({ keywords: "engineer", sources: ["adzuna"] });
+
+    assert.equal(result.jobs.length, 1);
+    assert.equal(result.jobs[0]!.title, "Valid");
+    assert.equal(loggerWarn.mock.callCount(), 1);
+
+    const [fields] = loggerWarn.mock.calls[0]!.arguments as [Record<string, unknown>, string];
+    assert.equal(fields.source, "adzuna");
+    assert.equal(fields.operation, "normalize");
+    assert.equal(fields.sourceId, "throw-1");
+    assert.equal(typeof fields.reason, "string");
+  });
+
+  it("does not skip a record with an invalid posting date", async () => {
+    adzunaSearch.mock.mockImplementation(async () => [
+      makeRaw({
+        sourceId: "a-1",
+        title: "Valid",
+        company: "CoA",
+        postedAt: new Date("not-a-real-date"),
+      }),
+    ]);
+
+    const result = await fetchJobs({ keywords: "engineer", sources: ["adzuna"] });
+
+    assert.equal(result.jobs.length, 1);
+    assert.equal(result.jobs[0]!.title, "Valid");
+    assert.equal(result.jobs[0]!.postedAt, undefined);
+    assert.equal(loggerWarn.mock.callCount(), 0);
+  });
+
+  it("treats a non-array adapter result as empty and logs a warning", async () => {
+    adzunaSearch.mock.mockImplementation(
+      async () => ({ not: "an array" } as unknown as RawJobResult[]),
+    );
+
+    const result = await fetchJobs({ keywords: "engineer", sources: ["adzuna"] });
+
+    assert.deepEqual(result.jobs, []);
+    assert.equal(result.total, 0);
+    assert.equal(loggerWarn.mock.callCount(), 1);
+
+    const [fields] = loggerWarn.mock.calls[0]!.arguments as [Record<string, unknown>, string];
+    assert.equal(fields.source, "adzuna");
+    assert.equal(fields.operation, "fetch");
+    assert.equal(fields.reason, "adapter returned a non-array result");
+  });
 });
